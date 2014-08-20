@@ -141,55 +141,6 @@ struct _LogTemplateFunction
   gpointer arg;
 };
 
-typedef struct _TFSimpleFuncState
-{
-  gint argc;
-  LogTemplate **argv;
-} TFSimpleFuncState;
-
-typedef void (*TFSimpleFunc)(LogMessage *msg, gint argc, GString *argv[], GString *result);
-
-gboolean tf_simple_func_prepare(LogTemplateFunction *self, gpointer state, LogTemplate *parent, gint argc, gchar *argv[], GError **error);
-void tf_simple_func_eval(LogTemplateFunction *self, gpointer state, const LogTemplateInvokeArgs *args);
-void tf_simple_func_call(LogTemplateFunction *self, gpointer state, const LogTemplateInvokeArgs *args, GString *result);
-void tf_simple_func_free_state(gpointer state);
-
-
-#define TEMPLATE_FUNCTION_PROTOTYPE(prefix) \
-  gpointer                                                              \
-  prefix ## _construct(Plugin *self,                                    \
-                       GlobalConfig *cfg,                               \
-                       gint plugin_type, const gchar *plugin_name)
-
-#define TEMPLATE_FUNCTION_DECLARE(prefix)	\
-  TEMPLATE_FUNCTION_PROTOTYPE(prefix);
-
-/* helper macros for template function plugins */
-#define TEMPLATE_FUNCTION(state_struct, prefix, prepare, eval, call, free_state, arg) \
-  TEMPLATE_FUNCTION_PROTOTYPE(prefix) 					\
-  {                                                                     \
-    static LogTemplateFunction func = {                                 \
-      sizeof(state_struct),                                             \
-      prepare,                                                          \
-      eval,                                                             \
-      call,                                                             \
-      free_state,                                                       \
-      NULL,								\
-      arg                                                               \
-    };                                                                  \
-    return &func;                                                       \
-  }
-
-#define TEMPLATE_FUNCTION_SIMPLE(x) TEMPLATE_FUNCTION(TFSimpleFuncState, x, tf_simple_func_prepare, tf_simple_func_eval, tf_simple_func_call, tf_simple_func_free_state, x)
-
-#define TEMPLATE_FUNCTION_PLUGIN(x, tf_name) \
-  {                                     \
-    .type = LL_CONTEXT_TEMPLATE_FUNC,   \
-    .name = tf_name,                    \
-    .construct = x ## _construct,       \
-  }
-
-
 /* appends the formatted output into result */
 
 void log_template_set_escape(LogTemplate *self, gboolean enable);
@@ -199,7 +150,6 @@ void log_template_format(LogTemplate *self, LogMessage *lm, const LogTemplateOpt
 void log_template_append_format(LogTemplate *self, LogMessage *lm, const LogTemplateOptions *opts, gint tz, gint32 seq_num, const gchar *context_id, GString *result);
 void log_template_append_format_with_context(LogTemplate *self, LogMessage **messages, gint num_messages, const LogTemplateOptions *opts, gint tz, gint32 seq_num, const gchar *context_id, GString *result);
 void log_template_format_with_context(LogTemplate *self, LogMessage **messages, gint num_messages, const LogTemplateOptions *opts, gint tz, gint32 seq_num, const gchar *context_id, GString *result);
-void log_template_append_format_recursive(LogTemplate *self, const LogTemplateInvokeArgs *args, GString *result);
 
 LogTemplate *log_template_new(GlobalConfig *cfg, gchar *name);
 LogTemplate *log_template_ref(LogTemplate *s);

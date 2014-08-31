@@ -91,8 +91,7 @@ _get_module_name(gint source)
     "amqp",
     "stomp",
     "redis",
-    "snmp",
-    "smtp"
+    "snmp"
   };
   return module_names[source & SCS_SOURCE_MASK];
 }
